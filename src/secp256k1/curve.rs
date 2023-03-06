@@ -6,10 +6,9 @@ use core::fmt::Debug;
 use core::iter::Sum;
 use core::ops::{Add, Mul, Neg, Sub};
 use ff::{Field, PrimeField};
-use group::Curve;
-use group::{prime::PrimeCurveAffine, Group as _, GroupEncoding};
-
+use group::{prime::PrimeCurveAffine, Curve, Group as _, GroupEncoding};
 use rand::RngCore;
+use serde::{Deserialize, Serialize};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 impl Secp256k1 {
