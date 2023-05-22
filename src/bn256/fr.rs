@@ -153,6 +153,15 @@ field_common!(
 #[cfg(not(feature = "bn256-table"))]
 impl_from_u64!(Fr, R2);
 #[cfg(feature = "bn256-table")]
+// A field element is represented in the montgomery form -- this allows for cheap mul_mod operations. 
+// The catch is, if we build an Fr element, regardless of its format, we need to perform one big integer multiplication:
+//
+//      Fr([val, 0, 0, 0]) * R2
+//
+// When the "bn256-table" feature is enabled, we read the Fr element directly from the table. 
+// This avoids a big integer multiplication.
+//
+// We use a table with 2^16 entries when the element is smaller than 2^16.
 impl From<u64> for Fr {
     fn from(val: u64) -> Fr {
         if val < 65536 {
