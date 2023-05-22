@@ -39,9 +39,11 @@ serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [features]
 default = []
+# default = [ "bn256-table", "print-trace" ]
 asm = []
 prefetch = []
 print-trace = [ "ark-std/print-trace" ]
+bn256-table = []
 
 [profile.bench]
 opt-level = 3

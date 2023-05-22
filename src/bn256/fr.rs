@@ -3,6 +3,15 @@ use super::assembly::field_arithmetic_asm;
 #[cfg(not(feature = "asm"))]
 use crate::{field_arithmetic, field_specific};
 
+#[cfg(feature = "bn256-table")]
+#[rustfmt::skip]
+mod table;
+#[cfg(feature = "bn256-table")]
+#[cfg(test)]
+mod table_tests;
+#[cfg(feature = "bn256-table")]
+pub use table::FR_TABLE;
+
 use crate::arithmetic::{adc, mac, sbb};
 use core::convert::TryInto;
 use core::fmt;
@@ -117,11 +126,14 @@ const ZETA: Fr = Fr::from_raw([
     0x30644e72e131a029,
 ]);
 
+#[cfg(not(feature = "bn256-table"))]
+use crate::impl_from_u64;
 use crate::{
     field_common, impl_add_binop_specify_output, impl_binops_additive,
     impl_binops_additive_specify_output, impl_binops_multiplicative,
     impl_binops_multiplicative_mixed, impl_sub_binop_specify_output,
 };
+
 impl_binops_additive!(Fr, Fr);
 impl_binops_multiplicative!(Fr, Fr);
 field_common!(
@@ -137,6 +149,20 @@ field_common!(
     R2,
     R3
 );
+
+#[cfg(not(feature = "bn256-table"))]
+impl_from_u64!(Fr, R2);
+#[cfg(feature = "bn256-table")]
+impl From<u64> for Fr {
+    fn from(val: u64) -> Fr {
+        if val < 65536 {
+            FR_TABLE[val as usize]
+        } else {
+            Fr([val, 0, 0, 0]) * R2
+        }
+    }
+}
+
 #[cfg(not(feature = "asm"))]
 field_arithmetic!(Fr, MODULUS, INV, sparse);
 #[cfg(feature = "asm")]
@@ -392,5 +418,17 @@ mod test {
             }
         }
         end_timer!(start);
+    }
+
+    #[test]
+    fn bench_fr_from_u16() {
+        let repeat = 1000000;
+        let mut rng = ark_std::test_rng();
+        let base = (0..repeat).map(|_| (rng.next_u32() % (1 << 16)) as u64);
+
+        let timer = start_timer!(|| format!("generate {} Bn256 scalar field elements", repeat));
+        let _res: Vec<_> = base.map(|b| Fr::from(b)).collect();
+
+        end_timer!(timer);
     }
 }
