@@ -95,7 +95,7 @@ const ZETA: Fq = Fq::from_raw([
 use crate::{
     field_common, impl_add_binop_specify_output, impl_binops_additive,
     impl_binops_additive_specify_output, impl_binops_multiplicative,
-    impl_binops_multiplicative_mixed, impl_sub_binop_specify_output,
+    impl_binops_multiplicative_mixed, impl_from_u64, impl_sub_binop_specify_output,
 };
 impl_binops_additive!(Fq, Fq);
 impl_binops_multiplicative!(Fq, Fq);
@@ -112,6 +112,7 @@ field_common!(
     R2,
     R3
 );
+impl_from_u64!(Fq, R2);
 #[cfg(not(feature = "asm"))]
 field_arithmetic!(Fq, MODULUS, INV, sparse);
 #[cfg(feature = "asm")]
