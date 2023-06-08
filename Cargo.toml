@@ -39,7 +39,7 @@ serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [features]
 # default = [ "bn256-table" ]
-default = [ "bn256-table", "maybe_u64" ]
+default = [ "bn256-table", "maybe_u64", "print-trace" ]
 maybe_u64 = [ ]
 asm = []
 prefetch = []
