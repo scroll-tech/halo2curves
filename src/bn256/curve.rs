@@ -143,7 +143,19 @@ impl CurveEndo for G1 {
     }
 
     fn endomorphism_scalars(k: &Self::ScalarExt) -> (u128, u128) {
+        #[cfg(not(feature = "maybe_u64"))]
         let input = Fr::montgomery_reduce(&[k.0[0], k.0[1], k.0[2], k.0[3], 0, 0, 0, 0]).0;
+
+        #[cfg(feature = "maybe_u64")]
+        let input = match *k {
+            crate::MaybeU64::Full(b) => {
+                super::fr::FrInternal::montgomery_reduce(&[
+                    b.0[0], b.0[1], b.0[2], b.0[3], 0, 0, 0, 0,
+                ])
+                .0
+            }
+            crate::MaybeU64::U64(a) => [a, 0, 0, 0],
+        };
 
         let c1_512 = mul_512(ENDO_G2, input);
         let c2_512 = mul_512(ENDO_G1, input);

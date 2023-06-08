@@ -38,7 +38,9 @@ paste = "1.0.11"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [features]
-default = [ "bn256-table" ]
+# default = [ "bn256-table" ]
+default = [ "bn256-table", "maybe_u64" ]
+maybe_u64 = [ ]
 asm = []
 prefetch = []
 print-trace = [ "ark-std/print-trace" ]
