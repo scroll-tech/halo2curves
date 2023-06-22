@@ -158,6 +158,14 @@ impl<'a, 'b> Mul<&'b Fr> for &'a Gt {
     }
 }
 
+impl<'a, 'b> Mul<&'b Gt> for &'a Gt {
+    type Output = Gt;
+
+    fn mul(self, rhs: &'b Gt) -> Self::Output {
+        Gt(self.0.mul(rhs.0))
+    }
+}
+
 use crate::{
     impl_add_binop_specify_output, impl_binops_additive, impl_binops_additive_specify_output,
     impl_binops_multiplicative, impl_binops_multiplicative_mixed, impl_sub_binop_specify_output,
