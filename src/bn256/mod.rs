@@ -4,7 +4,11 @@ mod fq;
 mod fq12;
 mod fq2;
 mod fq6;
+
+#[cfg(not(all(target_os = "zkvm", target_vendor = "succinct")))]
 mod fr;
+#[cfg(all(target_os = "zkvm", target_vendor = "succinct"))]
+mod fr_sp1;
 
 #[cfg(feature = "asm")]
 mod assembly;
