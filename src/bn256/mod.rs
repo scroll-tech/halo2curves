@@ -19,7 +19,10 @@ pub use fq::*;
 pub use fq12::*;
 pub use fq2::*;
 pub use fq6::*;
+#[cfg(not(all(target_os = "zkvm", target_vendor = "succinct")))]
 pub use fr::*;
+#[cfg(all(target_os = "zkvm", target_vendor = "succinct"))]
+pub use fr_sp1::*;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum LegendreSymbol {

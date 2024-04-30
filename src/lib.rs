@@ -3,6 +3,7 @@
 mod arithmetic;
 
 pub mod bn256;
+#[cfg(not(all(target_os = "zkvm", target_vendor = "succinct")))]
 pub mod grumpkin;
 pub mod pairing;
 pub mod pasta;

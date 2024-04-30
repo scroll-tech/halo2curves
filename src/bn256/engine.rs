@@ -4,7 +4,10 @@ use crate::bn256::fq::*;
 use crate::bn256::fq12::*;
 use crate::bn256::fq2::*;
 use crate::bn256::fq6::FROBENIUS_COEFF_FQ6_C1;
+#[cfg(not(all(target_os = "zkvm", target_vendor = "succinct")))]
 use crate::bn256::fr::*;
+#[cfg(all(target_os = "zkvm", target_vendor = "succinct"))]
+use crate::bn256::fr_sp1::*;
 use crate::ff::{Field, PrimeField};
 use crate::group::cofactor::CofactorCurveAffine;
 use crate::group::Group;
