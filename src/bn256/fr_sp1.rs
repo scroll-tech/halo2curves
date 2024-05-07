@@ -11,6 +11,7 @@ use crate::{
 use core::fmt;
 use core::ops::{Add, Mul, Neg, Sub};
 use ff::PrimeField;
+use ff::FromUniformBytes;
 use rand::RngCore;
 use std::convert::TryInto;
 use std::io;
@@ -81,29 +82,29 @@ impl Fr {
     }
 
     pub fn from_bytes(bytes: &[u8; 32]) -> CtOption<Fr> {
-        let mut tmp = Fr([0, 0, 0, 0, 0, 0, 0, 0]);
+        let mut tmp = [0, 0, 0, 0, 0, 0, 0, 0];
 
-        tmp.0[0] = u32::from_le_bytes(bytes[0..4].try_into().unwrap());
-        tmp.0[1] = u32::from_le_bytes(bytes[4..8].try_into().unwrap());
-        tmp.0[2] = u32::from_le_bytes(bytes[8..12].try_into().unwrap());
-        tmp.0[3] = u32::from_le_bytes(bytes[12..16].try_into().unwrap());
-        tmp.0[4] = u32::from_le_bytes(bytes[16..20].try_into().unwrap());
-        tmp.0[5] = u32::from_le_bytes(bytes[20..24].try_into().unwrap());
-        tmp.0[6] = u32::from_le_bytes(bytes[24..28].try_into().unwrap());
-        tmp.0[7] = u32::from_le_bytes(bytes[28..32].try_into().unwrap());
+        tmp[0] = u32::from_le_bytes(bytes[0..4].try_into().unwrap());
+        tmp[1] = u32::from_le_bytes(bytes[4..8].try_into().unwrap());
+        tmp[2] = u32::from_le_bytes(bytes[8..12].try_into().unwrap());
+        tmp[3] = u32::from_le_bytes(bytes[12..16].try_into().unwrap());
+        tmp[4] = u32::from_le_bytes(bytes[16..20].try_into().unwrap());
+        tmp[5] = u32::from_le_bytes(bytes[20..24].try_into().unwrap());
+        tmp[6] = u32::from_le_bytes(bytes[24..28].try_into().unwrap());
+        tmp[7] = u32::from_le_bytes(bytes[28..32].try_into().unwrap());
 
-        let (_, borrow) = sbb_u32(tmp.0[0], MODULUS.0[0], 0);
-        let (_, borrow) = sbb_u32(tmp.0[1], MODULUS.0[1], borrow);
-        let (_, borrow) = sbb_u32(tmp.0[2], MODULUS.0[2], borrow);
-        let (_, borrow) = sbb_u32(tmp.0[3], MODULUS.0[3], borrow);
-        let (_, borrow) = sbb_u32(tmp.0[4], MODULUS.0[4], borrow);
-        let (_, borrow) = sbb_u32(tmp.0[5], MODULUS.0[5], borrow);
-        let (_, borrow) = sbb_u32(tmp.0[6], MODULUS.0[6], borrow);
-        let (_, borrow) = sbb_u32(tmp.0[7], MODULUS.0[7], borrow);
+        let (_, borrow) = sbb_u32(tmp[0], MODULUS.0[0], 0);
+        let (_, borrow) = sbb_u32(tmp[1], MODULUS.0[1], borrow);
+        let (_, borrow) = sbb_u32(tmp[2], MODULUS.0[2], borrow);
+        let (_, borrow) = sbb_u32(tmp[3], MODULUS.0[3], borrow);
+        let (_, borrow) = sbb_u32(tmp[4], MODULUS.0[4], borrow);
+        let (_, borrow) = sbb_u32(tmp[5], MODULUS.0[5], borrow);
+        let (_, borrow) = sbb_u32(tmp[6], MODULUS.0[6], borrow);
+        let (_, borrow) = sbb_u32(tmp[7], MODULUS.0[7], borrow);
 
         let is_some = (borrow as u8) & 1;
 
-        CtOption::new(tmp, Choice::from(is_some))
+        CtOption::new(Fr(tmp), Choice::from(is_some))
     }
 
     pub const fn size() -> usize {
@@ -156,12 +157,12 @@ impl ff::Field for Fr {
     const ONE: Self = Self::one();
 
     fn double(&self) -> Fr {
-        todo!()
+        self + self
     }
 
     #[inline]
     fn square(&self) -> Fr {
-        todo!()
+        self * self
     }
 
     fn invert(&self) -> CtOption<Fr> {
@@ -191,15 +192,26 @@ impl ff::PrimeField for Fr {
     const S: u32 = S;
 
     fn from_repr(repr: Self::Repr) -> CtOption<Self> {
-        todo!()
+        Self::from_bytes(&repr)
     }
 
     fn to_repr(&self) -> Self::Repr {
-        todo!()
+        let mut r = [0u8; 32];
+
+        r[0..4].copy_from_slice(&self.0[0].to_le_bytes());
+        r[4..8].copy_from_slice(&self.0[1].to_le_bytes());
+        r[8..12].copy_from_slice(&self.0[2].to_le_bytes());
+        r[12..16].copy_from_slice(&self.0[3].to_le_bytes());
+        r[16..20].copy_from_slice(&self.0[4].to_le_bytes());
+        r[20..24].copy_from_slice(&self.0[5].to_le_bytes());
+        r[24..28].copy_from_slice(&self.0[6].to_le_bytes());
+        r[28..32].copy_from_slice(&self.0[7].to_le_bytes());
+
+        r
     }
 
     fn is_odd(&self) -> Choice {
-        todo!()
+        Choice::from((self.0[0] as u8) & 0x01_u8)
     }
 }
 
@@ -231,6 +243,12 @@ impl crate::serde::SerdeObject for Fr {
 
 impl From<u64> for Fr {
     fn from(val: u64) -> Fr {
+        todo!()
+    }
+}
+
+impl FromUniformBytes<64> for Fr {
+    fn from_uniform_bytes(bytes: &[u8; 64]) -> Self {
         todo!()
     }
 }
