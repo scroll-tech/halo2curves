@@ -10,8 +10,8 @@ use crate::{
 };
 use core::fmt;
 use core::ops::{Add, Mul, Neg, Sub};
-use ff::PrimeField;
 use ff::FromUniformBytes;
+use ff::PrimeField;
 use rand::RngCore;
 use std::convert::TryInto;
 use std::io;
@@ -243,7 +243,9 @@ impl crate::serde::SerdeObject for Fr {
 
 impl From<u64> for Fr {
     fn from(val: u64) -> Fr {
-        Fr([val, 0, 0, 0])
+        let v_lo = val as u32;
+        let v_hi = (val >> 32) as u32;
+        Fr([v_lo, v_hi, 0, 0, 0, 0, 0, 0])
     }
 }
 
