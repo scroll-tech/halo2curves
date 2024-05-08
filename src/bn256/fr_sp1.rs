@@ -243,7 +243,7 @@ impl crate::serde::SerdeObject for Fr {
 
 impl From<u64> for Fr {
     fn from(val: u64) -> Fr {
-        todo!()
+        Fr([val, 0, 0, 0])
     }
 }
 
