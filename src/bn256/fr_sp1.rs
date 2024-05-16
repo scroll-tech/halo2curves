@@ -1,5 +1,6 @@
 extern "C" {
-    fn syscall_bn254_scalar_arith(pq: *mut u32, op: u32);
+    fn syscall_bn254_scalar_add(p: *mut u32, q: *const u32);
+    fn syscall_bn254_scalar_mul(p: *mut u32, q: *const u32);
 }
 
 use crate::serde::SerdeObject;
@@ -112,39 +113,39 @@ impl Fr {
     }
 
     pub fn mul(&self, rhs: &Self) -> Fr {
-        let mut pq = [0u32; 8 * 2];
-        pq[..8].copy_from_slice(&self.0);
-        pq[8..].copy_from_slice(&rhs.0);
+        let mut p = core::mem::MaybeUninit::<[u32; 8]>::uninit();
+
+        let src_ptr = self.0.as_ptr() as *const u32;
+        let p_ptr = p.as_mut_ptr() as *mut u32;
+        let q_ptr = rhs.0.as_ptr() as *const u32;
 
         unsafe {
-            syscall_bn254_scalar_arith(pq.as_mut_ptr(), 0b10_u32);
+            core::ptr::copy(src_ptr, p_ptr, 8);
+            syscall_bn254_scalar_mul(p_ptr, q_ptr);
         }
 
-        Fr(pq[..8].try_into().unwrap())
+        let p = unsafe { p.assume_init() };
+        Fr(p)
     }
 
     pub fn sub(&self, rhs: &Self) -> Fr {
-        let mut pq = [0u32; 8 * 2];
-        pq[..8].copy_from_slice(&self.0);
-        pq[8..].copy_from_slice(&rhs.0);
-
-        unsafe {
-            syscall_bn254_scalar_arith(pq.as_mut_ptr(), 0b01_u32);
-        }
-
-        Fr(pq[..8].try_into().unwrap())
+        todo!()
     }
 
     pub fn add(&self, rhs: &Self) -> Fr {
-        let mut pq = [0u32; 8 * 2];
-        pq[..8].copy_from_slice(&self.0);
-        pq[8..].copy_from_slice(&rhs.0);
+        let mut p = core::mem::MaybeUninit::<[u32; 8]>::uninit();
+
+        let src_ptr = self.0.as_ptr() as *const u32;
+        let p_ptr = p.as_mut_ptr() as *mut u32;
+        let q_ptr = rhs.0.as_ptr() as *const u32;
 
         unsafe {
-            syscall_bn254_scalar_arith(pq.as_mut_ptr(), 0b00_u32);
+            core::ptr::copy(src_ptr, p_ptr, 8);
+            syscall_bn254_scalar_add(p_ptr, q_ptr);
         }
 
-        Fr(pq[..8].try_into().unwrap())
+        let p = unsafe { p.assume_init() };
+        Fr(p)
     }
 }
 
