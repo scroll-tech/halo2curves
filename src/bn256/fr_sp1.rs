@@ -149,9 +149,69 @@ impl Fr {
     }
 }
 
-impl_binops_additive!(Fr, Fr);
-impl_binops_multiplicative!(Fr, Fr);
+impl_binops_additive_specify_output!(Fr, Fr, Fr);
+impl_binops_multiplicative_mixed!(Fr, Fr, Fr);
 impl_sum_prod!(Fr);
+
+impl ::core::ops::SubAssign<Fr> for Fr {
+    #[inline]
+    fn sub_assign(&mut self, rhs: Fr) {
+        *self = &*self - &rhs;
+    }
+}
+
+impl<'b> ::core::ops::SubAssign<&'b Fr> for Fr {
+    #[inline]
+    fn sub_assign(&mut self, rhs: &'b Fr) {
+        *self = &*self - rhs;
+    }
+}
+
+impl ::core::ops::AddAssign<Fr> for Fr {
+    #[inline]
+    fn add_assign(&mut self, rhs: Fr) {
+        unsafe {
+            syscall_bn254_scalar_add(
+                self.0.as_mut_ptr() as *mut u32,
+                rhs.0.as_ptr() as *const u32,
+            );
+        }
+    }
+}
+
+impl<'b> ::core::ops::AddAssign<&'b Fr> for Fr {
+    #[inline]
+    fn add_assign(&mut self, rhs: &'b Fr) {
+        unsafe {
+            syscall_bn254_scalar_add(
+                self.0.as_mut_ptr() as *mut u32,
+                rhs.0.as_ptr() as *const u32,
+            );
+        }
+    }
+}
+
+impl core::ops::MulAssign<Fr> for Fr {
+    fn mul_assign(&mut self, rhs: Fr) {
+        unsafe {
+            syscall_bn254_scalar_mul(
+                self.0.as_mut_ptr() as *mut u32,
+                rhs.0.as_ptr() as *const u32,
+            );
+        }
+    }
+}
+
+impl<'b> core::ops::MulAssign<&'b Fr> for Fr {
+    fn mul_assign(&mut self, rhs: &'b Fr) {
+        unsafe {
+            syscall_bn254_scalar_mul(
+                self.0.as_mut_ptr() as *mut u32,
+                rhs.0.as_ptr() as *const u32,
+            );
+        }
+    }
+}
 
 impl ff::Field for Fr {
     const ZERO: Self = Self::zero();
