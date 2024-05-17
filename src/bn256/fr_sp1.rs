@@ -108,6 +108,13 @@ impl Fr {
         CtOption::new(Fr(tmp), Choice::from(is_some))
     }
 
+    pub fn from_raw_limbs_unchecked(limbs: &[u32; 8]) -> Fr {
+        let mut tmp = [0, 0, 0, 0, 0, 0, 0, 0];
+        tmp.as_mut_slice().copy_from_slice(limbs);
+
+        Fr(tmp)
+    }
+
     pub const fn size() -> usize {
         32
     }
