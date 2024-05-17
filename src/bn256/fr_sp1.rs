@@ -108,9 +108,18 @@ impl Fr {
         CtOption::new(Fr(tmp), Choice::from(is_some))
     }
 
-    pub fn from_raw_limbs_unchecked(limbs: &[u32; 8]) -> Fr {
+    pub fn from_raw(limbs: [u64; 4]) -> Fr {
+        // FIXME: handle limbs that are larger than modulus.
         let mut tmp = [0, 0, 0, 0, 0, 0, 0, 0];
-        tmp.as_mut_slice().copy_from_slice(limbs);
+
+        tmp[0] = (limbs[0] & 0xffffffff) as u32;
+        tmp[1] = ((limbs[0] >> 32) & 0xffffffff) as u32;
+        tmp[2] = (limbs[1] & 0xffffffff) as u32;
+        tmp[3] = ((limbs[1] >> 32) & 0xffffffff) as u32;
+        tmp[4] = (limbs[2] & 0xffffffff) as u32;
+        tmp[5] = ((limbs[2] >> 32) & 0xffffffff) as u32;
+        tmp[6] = (limbs[3] & 0xffffffff) as u32;
+        tmp[7] = ((limbs[3] >> 32) & 0xffffffff) as u32;
 
         Fr(tmp)
     }
