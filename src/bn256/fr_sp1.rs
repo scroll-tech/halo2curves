@@ -208,6 +208,7 @@ impl<'b> ::core::ops::AddAssign<&'b Fr> for Fr {
 }
 
 impl core::ops::MulAssign<Fr> for Fr {
+    #[inline]
     fn mul_assign(&mut self, rhs: Fr) {
         unsafe {
             syscall_bn254_scalar_mul(
@@ -219,6 +220,7 @@ impl core::ops::MulAssign<Fr> for Fr {
 }
 
 impl<'b> core::ops::MulAssign<&'b Fr> for Fr {
+    #[inline]
     fn mul_assign(&mut self, rhs: &'b Fr) {
         unsafe {
             syscall_bn254_scalar_mul(
