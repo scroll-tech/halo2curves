@@ -54,3 +54,6 @@ codegen-units = 1
 [[bench]]
 name = "less_than"
 harness = false
+
+[patch.crates-io]
+ff = { git = "https://github.com/scroll-tech/ff", rev = "7e94aa6" }

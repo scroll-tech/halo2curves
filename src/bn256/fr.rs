@@ -13,6 +13,7 @@ use crate::{
 use core::convert::TryInto;
 use core::fmt;
 use core::ops::{Add, Mul, Neg, Sub};
+use ff::{ExtraArithmetic, MulAddAssign};
 use rand::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
@@ -300,6 +301,33 @@ impl FromUniformBytes<64> for Fr {
 
 impl WithSmallOrderMulGroup<3> for Fr {
     const ZETA: Self = ZETA;
+}
+
+impl ExtraArithmetic for Fr {}
+
+impl MulAddAssign for Fr {
+    fn mul_add_assign(&mut self, a: Self, b: Self) {
+        self.mul_add_assign(&a, &b)
+    }
+}
+
+impl<'a> MulAddAssign<Fr, &'a Fr> for Fr {
+    fn mul_add_assign(&mut self, a: Self, b: &'a Self) {
+        self.mul_add_assign(&a, b)
+    }
+}
+
+impl<'a> MulAddAssign<&'a Fr, Fr> for Fr {
+    fn mul_add_assign(&mut self, a: &'a Self, b: Self) {
+        self.mul_add_assign(a, &b)
+    }
+}
+
+impl<'a, 'b> MulAddAssign<&'a Fr, &'b Fr> for Fr {
+    fn mul_add_assign(&mut self, a: &'a Self, b: &'b Self) {
+        *self = *self + *a + *b;
+    }
+
 }
 
 #[cfg(test)]

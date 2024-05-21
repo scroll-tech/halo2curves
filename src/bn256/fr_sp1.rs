@@ -1,6 +1,7 @@
 extern "C" {
     fn syscall_bn254_scalar_add(p: *mut u32, q: *const u32);
     fn syscall_bn254_scalar_mul(p: *mut u32, q: *const u32);
+    fn syscall_bn254_scalar_mac(ret: *mut u32, a: *const u32, b: *const u32);
 }
 
 use crate::serde::SerdeObject;
@@ -11,8 +12,9 @@ use crate::{
 };
 use core::fmt;
 use core::ops::{Add, Mul, Neg, Sub};
-use ff::FromUniformBytes;
+use ff::{FromUniformBytes, MulAddAssign};
 use ff::PrimeField;
+use ff::ExtraArithmetic;
 use rand::RngCore;
 use std::convert::TryInto;
 use std::io;
@@ -229,6 +231,61 @@ impl<'b> core::ops::MulAssign<&'b Fr> for Fr {
             );
         }
     }
+}
+
+impl ExtraArithmetic for Fr {}
+
+impl MulAddAssign for Fr {
+    #[inline]
+    fn mul_add_assign(&mut self, a: Self, b: Self) {
+        unsafe {
+            syscall_bn254_scalar_mac(
+                self.0.as_mut_ptr() as *mut u32,
+                a.0.as_ptr() as *const u32,
+                b.0.as_ptr() as *const u32,
+            );
+        }
+    }
+}
+
+impl<'a> MulAddAssign<Fr, &'a Fr> for Fr {
+    #[inline]
+    fn mul_add_assign(&mut self, a: Self, b: &'a Self) {
+        unsafe {
+            syscall_bn254_scalar_mac(
+                self.0.as_mut_ptr() as *mut u32,
+                a.0.as_ptr() as *const u32,
+                b.0.as_ptr() as *const u32,
+            );
+        }
+    }
+}
+
+impl<'a> MulAddAssign<&'a Fr, Fr> for Fr {
+    #[inline]
+    fn mul_add_assign(&mut self, a: &'a Self, b: Self) {
+        unsafe {
+            syscall_bn254_scalar_mac(
+                self.0.as_mut_ptr() as *mut u32,
+                a.0.as_ptr() as *const u32,
+                b.0.as_ptr() as *const u32,
+            );
+        }
+    }
+}
+
+impl<'a, 'b> MulAddAssign<&'a Fr, &'b Fr> for Fr {
+    #[inline]
+    fn mul_add_assign(&mut self, a: &'a Self, b: &'b Self) {
+        unsafe {
+            syscall_bn254_scalar_mac(
+                self.0.as_mut_ptr() as *mut u32,
+                a.0.as_ptr() as *const u32,
+                b.0.as_ptr() as *const u32,
+            );
+        }
+    }
+
 }
 
 impl ff::Field for Fr {
