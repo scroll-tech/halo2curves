@@ -1,5 +1,4 @@
 extern "C" {
-    fn syscall_bn254_scalar_add(p: *mut u32, q: *const u32);
     fn syscall_bn254_scalar_mul(p: *mut u32, q: *const u32);
     fn syscall_bn254_scalar_mac(ret: *mut u32, a: *const u32, b: *const u32);
 }
@@ -72,6 +71,8 @@ pub(crate) const fn sbb_u32(a: u32, b: u32, borrow: u32) -> (u32, u32) {
     let ret = (a as u64).wrapping_sub((b as u64) + ((borrow >> 31) as u64));
     (ret as u32, (ret >> 32) as u32)
 }
+
+static ONE: Fr = Fr::one();
 
 impl Fr {
     #[inline]
@@ -159,7 +160,7 @@ impl Fr {
 
         unsafe {
             core::ptr::copy(src_ptr, p_ptr, 8);
-            syscall_bn254_scalar_add(p_ptr, q_ptr);
+            syscall_bn254_scalar_mac(p_ptr, q_ptr, ONE.0.as_ptr() as *const u32);
         }
 
         let p = unsafe { p.assume_init() };
@@ -189,9 +190,10 @@ impl ::core::ops::AddAssign<Fr> for Fr {
     #[inline]
     fn add_assign(&mut self, rhs: Fr) {
         unsafe {
-            syscall_bn254_scalar_add(
+            syscall_bn254_scalar_mac(
                 self.0.as_mut_ptr() as *mut u32,
                 rhs.0.as_ptr() as *const u32,
+                ONE.0.as_ptr() as *const u32,
             );
         }
     }
@@ -201,9 +203,10 @@ impl<'b> ::core::ops::AddAssign<&'b Fr> for Fr {
     #[inline]
     fn add_assign(&mut self, rhs: &'b Fr) {
         unsafe {
-            syscall_bn254_scalar_add(
+            syscall_bn254_scalar_mac(
                 self.0.as_mut_ptr() as *mut u32,
                 rhs.0.as_ptr() as *const u32,
+                ONE.0.as_ptr() as *const u32,
             );
         }
     }
