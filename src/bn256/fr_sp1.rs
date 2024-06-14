@@ -1,8 +1,3 @@
-extern "C" {
-    fn syscall_bn254_scalar_mul(p: *mut u32, q: *const u32);
-    fn syscall_bn254_scalar_mac(ret: *mut u32, a: *const u32, b: *const u32);
-}
-
 use crate::serde::SerdeObject;
 use crate::{
     field_bits, field_common, impl_add_binop_specify_output, impl_binops_additive,
@@ -10,6 +5,7 @@ use crate::{
     impl_binops_multiplicative_mixed, impl_sub_binop_specify_output, impl_sum_prod,
 };
 use core::fmt;
+use core::arch::asm;
 use core::ops::{Add, Mul, Neg, Sub};
 use ff::{FromUniformBytes, MulAddAssign};
 use ff::PrimeField;
@@ -23,6 +19,31 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 /// redirected to syscall_bn254_scalar_arith.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Fr(pub(crate) [u32; 8]);
+
+#[inline]
+fn syscall_bn254_scalar_mul(p: *mut u32, q: *const u32) {
+    const BN254_SCALAR_MUL: u32 = 0x00_01_01_20;
+    unsafe {
+        asm!(
+            "ecall",
+            in("t0") BN254_SCALAR_MUL,
+            in("a0") p,
+            in("a1") q,
+        );
+    }
+}
+#[inline]
+fn syscall_bn254_scalar_mac(ret: *mut u32, a: *const u32, b: *const u32) {
+    const BN254_SCALAR_MAC: u32 = 0x00_01_01_21;
+    unsafe {
+        asm!(
+            "ecall",
+            in("t0") BN254_SCALAR_MAC,
+            in("a0") ret,
+            in("a1") &[a, b],
+        );
+    }
+}
 
 const MODULUS: Fr = Fr([
     0xf0000001, 0x43e1f593, 0x79b97091, 0x2833e848, 0x8181585d, 0xb85045b6, 0xe131a029, 0x30644e72,
@@ -175,7 +196,7 @@ impl_sum_prod!(Fr);
 impl ::core::ops::SubAssign<Fr> for Fr {
     #[inline]
     fn sub_assign(&mut self, rhs: Fr) {
-        *self = &*self - &rhs;
+        self.sub_assign(&rhs);
     }
 }
 
@@ -189,50 +210,28 @@ impl<'b> ::core::ops::SubAssign<&'b Fr> for Fr {
 impl ::core::ops::AddAssign<Fr> for Fr {
     #[inline]
     fn add_assign(&mut self, rhs: Fr) {
-        unsafe {
-            syscall_bn254_scalar_mac(
-                self.0.as_mut_ptr() as *mut u32,
-                rhs.0.as_ptr() as *const u32,
-                ONE.0.as_ptr() as *const u32,
-            );
-        }
+        self.add_assign(&rhs);
     }
 }
 
 impl<'b> ::core::ops::AddAssign<&'b Fr> for Fr {
     #[inline]
     fn add_assign(&mut self, rhs: &'b Fr) {
-        unsafe {
-            syscall_bn254_scalar_mac(
-                self.0.as_mut_ptr() as *mut u32,
-                rhs.0.as_ptr() as *const u32,
-                ONE.0.as_ptr() as *const u32,
-            );
-        }
+        syscall_bn254_scalar_mac(self as *mut _ as *mut u32, rhs as *const _ as *const u32, &ONE as *const _ as *const u32);
     }
 }
 
 impl core::ops::MulAssign<Fr> for Fr {
     #[inline]
     fn mul_assign(&mut self, rhs: Fr) {
-        unsafe {
-            syscall_bn254_scalar_mul(
-                self.0.as_mut_ptr() as *mut u32,
-                rhs.0.as_ptr() as *const u32,
-            );
-        }
+        self.mul_assign(&rhs);
     }
 }
 
 impl<'b> core::ops::MulAssign<&'b Fr> for Fr {
     #[inline]
     fn mul_assign(&mut self, rhs: &'b Fr) {
-        unsafe {
-            syscall_bn254_scalar_mul(
-                self.0.as_mut_ptr() as *mut u32,
-                rhs.0.as_ptr() as *const u32,
-            );
-        }
+        syscall_bn254_scalar_mul(self  as *mut _ as *mut u32, rhs as *const _ as *const u32);
     }
 }
 
@@ -241,52 +240,28 @@ impl ExtraArithmetic for Fr {}
 impl MulAddAssign for Fr {
     #[inline]
     fn mul_add_assign(&mut self, a: Self, b: Self) {
-        unsafe {
-            syscall_bn254_scalar_mac(
-                self.0.as_mut_ptr() as *mut u32,
-                a.0.as_ptr() as *const u32,
-                b.0.as_ptr() as *const u32,
-            );
-        }
+        self.mul_add_assign(&a, &b);
     }
 }
 
 impl<'a> MulAddAssign<Fr, &'a Fr> for Fr {
     #[inline]
     fn mul_add_assign(&mut self, a: Self, b: &'a Self) {
-        unsafe {
-            syscall_bn254_scalar_mac(
-                self.0.as_mut_ptr() as *mut u32,
-                a.0.as_ptr() as *const u32,
-                b.0.as_ptr() as *const u32,
-            );
-        }
+        self.mul_add_assign(&a, b);
     }
 }
 
 impl<'a> MulAddAssign<&'a Fr, Fr> for Fr {
     #[inline]
     fn mul_add_assign(&mut self, a: &'a Self, b: Self) {
-        unsafe {
-            syscall_bn254_scalar_mac(
-                self.0.as_mut_ptr() as *mut u32,
-                a.0.as_ptr() as *const u32,
-                b.0.as_ptr() as *const u32,
-            );
-        }
+        self.mul_add_assign(a, &b);
     }
 }
 
 impl<'a, 'b> MulAddAssign<&'a Fr, &'b Fr> for Fr {
     #[inline]
     fn mul_add_assign(&mut self, a: &'a Self, b: &'b Self) {
-        unsafe {
-            syscall_bn254_scalar_mac(
-                self.0.as_mut_ptr() as *mut u32,
-                a.0.as_ptr() as *const u32,
-                b.0.as_ptr() as *const u32,
-            );
-        }
+        syscall_bn254_scalar_mac(self  as *mut _ as *mut u32, a as *const _ as *const u32, b as *const _ as *const u32);
     }
 
 }
