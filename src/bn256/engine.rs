@@ -48,7 +48,25 @@ impl PairingCurveAffine for G1Affine {
     }
 }
 
+impl axiom_pairing::PairingCurveAffine for G1Affine {
+    type Pair = G2Affine;
+    type PairingResult = Gt;
+
+    fn pairing_with(&self, other: &Self::Pair) -> Self::PairingResult {
+        pairing(self, other)
+    }
+}
+
 impl PairingCurveAffine for G2Affine {
+    type Pair = G1Affine;
+    type PairingResult = Gt;
+
+    fn pairing_with(&self, other: &Self::Pair) -> Self::PairingResult {
+        pairing(other, self)
+    }
+}
+
+impl axiom_pairing::PairingCurveAffine for G2Affine {
     type Pair = G1Affine;
     type PairingResult = Gt;
 
@@ -559,6 +577,13 @@ impl MillerLoopResult for Gt {
     }
 }
 
+impl axiom_pairing::MillerLoopResult for Gt {
+    type Gt = Gt;
+    fn final_exponentiation(&self) -> Self {
+        MillerLoopResult::final_exponentiation(self)
+    }
+}
+
 pub fn multi_miller_loop(terms: &[(&G1Affine, &G2Prepared)]) -> Gt {
     let mut pairs = vec![];
     for &(p, q) in terms {
@@ -646,6 +671,28 @@ impl Engine for Bn256 {
 }
 
 impl MultiMillerLoop for Bn256 {
+    type G2Prepared = G2Prepared;
+    type Result = Gt;
+
+    fn multi_miller_loop(terms: &[(&Self::G1Affine, &Self::G2Prepared)]) -> Self::Result {
+        multi_miller_loop(terms)
+    }
+}
+
+impl axiom_pairing::Engine for Bn256 {
+    type Fr = Fr;
+    type G1 = G1;
+    type G1Affine = G1Affine;
+    type G2 = G2;
+    type G2Affine = G2Affine;
+    type Gt = Gt;
+
+    fn pairing(p: &Self::G1Affine, q: &Self::G2Affine) -> Self::Gt {
+        pairing(p, q)
+    }
+}
+
+impl axiom_pairing::MultiMillerLoop for Bn256 {
     type G2Prepared = G2Prepared;
     type Result = Gt;
 
