@@ -114,11 +114,12 @@ impl<'a, 'b> Mul<&'b Fq2> for &'a Fq2 {
 
 use crate::{
     impl_add_binop_specify_output, impl_binops_additive, impl_binops_additive_specify_output,
-    impl_binops_multiplicative, impl_binops_multiplicative_mixed, impl_sub_binop_specify_output,
-    impl_sum_prod,
+    impl_binops_multiplicative, impl_binops_multiplicative_additive,
+    impl_binops_multiplicative_mixed, impl_sub_binop_specify_output, impl_sum_prod,
 };
 impl_binops_additive!(Fq2, Fq2);
 impl_binops_multiplicative!(Fq2, Fq2);
+impl_binops_multiplicative_additive!(Fq2, Fq2);
 impl_sum_prod!(Fq2);
 
 impl Fq2 {

@@ -24,9 +24,9 @@ ark-std = { version = "0.3" }
 
 [dependencies]
 subtle = "2.4"
-ff = "0.13.0"
+ff = { git = "https://github.com/scroll-tech/ff", branch = "main" }
 group = "0.13.0"
-pasta_curves = "0.5.0"
+pasta_curves = { git = "https://github.com/scroll-tech/pasta_curves", branch = "main" }
 static_assertions = "1.1.0"
 rand = "0.8"
 rand_core = { version = "0.6", default-features = false }
@@ -34,6 +34,9 @@ lazy_static = "1.4.0"
 num-bigint = "0.4.3"
 num-traits = "0.2"
 paste = "1.0.11"
+
+[patch.crates-io]
+ff = { git = "https://github.com/scroll-tech/ff", branch = "main" }
 
 [features]
 default = []

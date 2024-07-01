@@ -105,10 +105,12 @@ const ROOT_OF_UNITY_INV: Fp = Fp([
 use crate::{
     field_arithmetic, field_common, field_specific, impl_add_binop_specify_output,
     impl_binops_additive, impl_binops_additive_specify_output, impl_binops_multiplicative,
-    impl_binops_multiplicative_mixed, impl_sub_binop_specify_output, impl_sum_prod,
+    impl_binops_multiplicative_additive, impl_binops_multiplicative_mixed,
+    impl_sub_binop_specify_output, impl_sum_prod,
 };
 impl_binops_additive!(Fp, Fp);
 impl_binops_multiplicative!(Fp, Fp);
+impl_binops_multiplicative_additive!(Fp, Fp);
 field_common!(
     Fp,
     MODULUS,

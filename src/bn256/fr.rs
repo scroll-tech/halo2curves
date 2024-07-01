@@ -116,10 +116,12 @@ const ZETA: Fr = Fr::from_raw([
 use crate::{
     field_common, impl_add_binop_specify_output, impl_binops_additive,
     impl_binops_additive_specify_output, impl_binops_multiplicative,
-    impl_binops_multiplicative_mixed, impl_sub_binop_specify_output, impl_sum_prod,
+    impl_binops_multiplicative_additive, impl_binops_multiplicative_mixed,
+    impl_sub_binop_specify_output, impl_sum_prod,
 };
 impl_binops_additive!(Fr, Fr);
 impl_binops_multiplicative!(Fr, Fr);
+impl_binops_multiplicative_additive!(Fr, Fr);
 field_common!(
     Fr,
     MODULUS,
