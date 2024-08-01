@@ -4,12 +4,12 @@ use crate::{
     impl_binops_additive_specify_output, impl_binops_multiplicative,
     impl_binops_multiplicative_mixed, impl_sub_binop_specify_output, impl_sum_prod,
 };
-use core::fmt;
 use core::arch::asm;
+use core::fmt;
 use core::ops::{Add, Mul, Neg, Sub};
-use ff::{FromUniformBytes, MulAddAssign};
-use ff::PrimeField;
 use ff::ExtraArithmetic;
+use ff::PrimeField;
+use ff::{FromUniformBytes, MulAddAssign};
 use rand::RngCore;
 use std::convert::TryInto;
 use std::io;
@@ -217,7 +217,11 @@ impl ::core::ops::AddAssign<Fr> for Fr {
 impl<'b> ::core::ops::AddAssign<&'b Fr> for Fr {
     #[inline]
     fn add_assign(&mut self, rhs: &'b Fr) {
-        syscall_bn254_scalar_mac(self as *mut _ as *mut u32, rhs as *const _ as *const u32, &ONE as *const _ as *const u32);
+        syscall_bn254_scalar_mac(
+            self as *mut _ as *mut u32,
+            rhs as *const _ as *const u32,
+            &ONE as *const _ as *const u32,
+        );
     }
 }
 
@@ -231,7 +235,7 @@ impl core::ops::MulAssign<Fr> for Fr {
 impl<'b> core::ops::MulAssign<&'b Fr> for Fr {
     #[inline]
     fn mul_assign(&mut self, rhs: &'b Fr) {
-        syscall_bn254_scalar_mul(self  as *mut _ as *mut u32, rhs as *const _ as *const u32);
+        syscall_bn254_scalar_mul(self as *mut _ as *mut u32, rhs as *const _ as *const u32);
     }
 }
 
@@ -261,9 +265,12 @@ impl<'a> MulAddAssign<&'a Fr, Fr> for Fr {
 impl<'a, 'b> MulAddAssign<&'a Fr, &'b Fr> for Fr {
     #[inline]
     fn mul_add_assign(&mut self, a: &'a Self, b: &'b Self) {
-        syscall_bn254_scalar_mac(self  as *mut _ as *mut u32, a as *const _ as *const u32, b as *const _ as *const u32);
+        syscall_bn254_scalar_mac(
+            self as *mut _ as *mut u32,
+            a as *const _ as *const u32,
+            b as *const _ as *const u32,
+        );
     }
-
 }
 
 impl ff::Field for Fr {
@@ -322,6 +329,20 @@ impl ff::PrimeField for Fr {
         r[28..32].copy_from_slice(&self.0[7].to_le_bytes());
 
         r
+    }
+
+    fn from_u128(v: u128) -> Self {
+        let a0 = v as u32;
+        let a1 = (v >> 32) as u32;
+        let a2 = (v >> 64) as u32;
+        let a3 = (v >> 96) as u32;
+        let mut buf = [0u8; 32];
+
+        buf[0..4].copy_from_slice(&a0.to_le_bytes());
+        buf[4..8].copy_from_slice(&a1.to_le_bytes());
+        buf[8..12].copy_from_slice(&a2.to_le_bytes());
+        buf[12..16].copy_from_slice(&a3.to_le_bytes());
+        Self::from_repr_vartime(buf).unwrap()
     }
 
     fn is_odd(&self) -> Choice {
