@@ -1,4 +1,7 @@
 mod arithmetic;
+mod ff_inverse;
+mod ff_jacobi;
+
 pub mod hash_to_curve;
 // TODO: remove this and use traits defined in axiom_pairing instead.
 pub mod pairing;

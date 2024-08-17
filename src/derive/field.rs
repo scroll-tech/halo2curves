@@ -24,6 +24,11 @@ macro_rules! field_common {
         $r2:ident,
         $r3:ident
     ) => {
+        /// Bernstein-Yang modular multiplicative inverter created for the modulus equal to
+        /// the characteristic of the field to invert positive integers in the Montgomery form.
+        const BYINVERTOR: $crate::ff_inverse::BYInverter<6> =
+            $crate::ff_inverse::BYInverter::<6>::new(&$modulus.0, &$r2.0);
+
         impl $field {
             /// Returns zero, the additive identity.
             #[inline]
@@ -35,6 +40,22 @@ macro_rules! field_common {
             #[inline]
             pub const fn one() -> $field {
                 $r
+            }
+
+            /// Returns the multiplicative inverse of the
+            /// element. If it is zero, the method fails.
+            pub fn invert(&self) -> CtOption<Self> {
+                if let Some(inverse) = BYINVERTOR.invert(&self.0) {
+                    CtOption::new(Self(inverse), Choice::from(1))
+                } else {
+                    CtOption::new(Self::zero(), Choice::from(0))
+                }
+            }
+
+            // Returns the Legendre symbol, where the numerator and denominator
+            // are the element and the characteristic of the field, respectively.
+            pub fn jacobi(&self) -> i64 {
+                $crate::ff_jacobi::jacobi::<5>(&self.0, &$modulus.0)
             }
 
             fn from_u512(limbs: [u64; 8]) -> $field {
@@ -332,6 +353,28 @@ macro_rules! field_common {
                 Ok(())
             }
         }
+
+        #[test]
+        fn test_jacobi() {
+            use rand::SeedableRng;
+            use $crate::ff::Field;
+            use $crate::legendre::Legendre;
+            let mut rng = rand_xorshift::XorShiftRng::from_seed([
+                0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
+                0xbc, 0xe5,
+            ]);
+            for _ in 0..100000 {
+                let e = $field::random(&mut rng);
+                assert_eq!(
+                    e.legendre(),
+                    match e.jacobi() {
+                        1 => $field::ONE,
+                        -1 => -$field::ONE,
+                        _ => $field::ZERO,
+                    }
+                );
+            }
+        }
     };
 }
 
@@ -339,6 +382,7 @@ macro_rules! field_common {
 macro_rules! field_arithmetic {
     ($field:ident, $modulus:ident, $inv:ident, $field_type:ident) => {
         field_specific!($field, $modulus, $inv, $field_type);
+
         impl $field {
             /// Doubles this field element.
             #[inline]
