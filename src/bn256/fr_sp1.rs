@@ -132,7 +132,7 @@ impl Fr {
         CtOption::new(Fr(tmp), Choice::from(is_some))
     }
 
-    pub fn from_raw(limbs: [u64; 4]) -> Fr {
+    pub const fn from_raw(limbs: [u64; 4]) -> Fr {
         // FIXME: handle limbs that are larger than modulus.
         let mut tmp = [0, 0, 0, 0, 0, 0, 0, 0];
 
