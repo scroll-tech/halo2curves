@@ -12,6 +12,7 @@ rust-version = "1.63.0"
 proc-macro = true
 
 [dependencies]
+bytemuck = { version = "1.20", features = ["derive", "min_const_generics"] }
 num-bigint = "0.4"
 num-integer = "0.1"
 num-traits = "0.2"

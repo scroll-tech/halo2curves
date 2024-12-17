@@ -213,7 +213,10 @@ pub(crate) fn impl_field(input: TokenStream) -> TokenStream {
     };
 
     let impl_field = quote! {
-        #[derive(Clone, Copy, PartialEq, Eq, Hash, Default)]
+        use bytemuck::{Pod, Zeroable};
+
+        #[derive(Clone, Copy, PartialEq, Eq, Hash, Default, Pod, Zeroable)]
+        #[repr(C)]
         pub struct #field(pub(crate) [u64; #num_limbs]);
 
         impl core::fmt::Debug for #field {

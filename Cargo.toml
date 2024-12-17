@@ -25,6 +25,7 @@ impls = "1"
 getrandom = { version = "0.2", features = ["js"] }
 
 [dependencies]
+bytemuck = { version = "1.20", features = ["derive", "min_const_generics"] }
 halo2derive = {path = "derive", version="0.1.0"}
 subtle = "2.5"
 ff = { version = "0.13.0", default-features = false, features = ["std"] }
